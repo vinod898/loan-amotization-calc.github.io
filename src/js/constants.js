@@ -1,9 +1,5 @@
 const columns = [
     {
-        field: 'state',
-        checkbox: 'false'
-    },
-    {
         field: 'month',
         title: 'Month',
     }, {
@@ -28,7 +24,18 @@ const columns = [
     {
         field: 'interestRate',
         title: 'Interest Rate'
-    }];
+    },
+    {
+        field: 'operate',
+        align: 'center',
+        valign: 'middle',
+        clickToSelect: true,
+        formatter : function(value,row,index) {
+          //return '<input name="elementname"  value="'+value+'"/>';
+          return `<button id='editData-${row.id}'  class=\'btn btn-primary \'  data-toggle="modal" data-target="#exampleModal" >Edit</button>`;
+        }
+      }
+    ];
 
 const calculateEmi = (interestRate, loanPeriod, loanAmount) => {
     roi = interestRate / 12 / 100;
@@ -47,6 +54,7 @@ const calculateEmi = (interestRate, loanPeriod, loanAmount) => {
 const RENDRED_CHART_DATA = {
     PRINCIPLE: 0,
     INTEREST: 0,
+    PARTPAYMENT : 0
 };
 
 const AMOUNT_FORMAT = new Intl.NumberFormat("en-IN", {
@@ -62,7 +70,7 @@ const INTERESTRATE_FORMAT = new Intl.NumberFormat("en-IN", {
 const validateDate = (currentDate, selectedYear) => {
     const [item1, item2] = selectedYear.split('-');
     const { firstYear, NextYear } = { firstYear: new Date(item1, 3, 1), NextYear: new Date(item2, 2, 31) }
-    return currentDate.getTime() > firstYear.getTime() && currentDate.getTime() < NextYear.getTime()
+    return currentDate.getTime() >= firstYear.getTime() && currentDate.getTime() <= NextYear.getTime()
 }
 
 const isNotNull = (val) => {
@@ -79,4 +87,26 @@ const emptyOutPut = () => {
         totalPrinciple: 0,
         tenureYears: []
     };
+}
+
+const setModel = (rowData) => {
+    const { emiDate, beginingBalance, endingBalance, totalPayMent, extraPayment, principleAmount, interestAmount, interestRate, emi } = rowData;
+   
+    $('#modelBeginningBalance').val(beginingBalance);
+    $('#modelEndingBalance').val(endingBalance);
+    $('#modelEMIDate').val(emiDate);
+    $('#modelPrincAmount').val(principleAmount);
+    $('#modelInterestAmount').val(interestAmount);
+    $('#modelInterestRate').val(interestRate);
+    $('#modelEMIAmount').val(emi);
+    $('#modelExtraPayment').val(extraPayment);
+}
+
+
+const getModel = () => {
+    const interestRate = $('#modelInterestRate').val();
+    const emi = $('#modelEMIAmount').val();
+    const extraPayment = $('#modelExtraPayment').val();
+    return { extraPayment, interestRate, emi };
+
 }

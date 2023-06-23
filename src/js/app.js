@@ -65,13 +65,33 @@ $(document).ready(() => {
         data: loanOutputDetails.amortization,
     });
 
-    $("input[type='checkbox']").change((e) => {
-        let index = e.target.dataset.index;
-        let rowData = loanOutputDetails.amortization[index];
-        e.target.checked = false;
-        console.log(rowData);
-        $('#exampleModal').modal({ show: true })
+    $('#saveModelChanges').on('click', () => {
+        const index = $('#saveModelChanges').data('index');
+        if (index && index > -1) {
+            let { extraPayment, interestRate, emi } = getModel();
+            extraPayment = eval(extraPayment.replace(/,/g, ""))
+            interestRate = eval(interestRate.replace(/,/g, ""))
+            emi = eval(emi.replace(/,/g, ""))
 
+            for (let i = index; i < loanOutputDetails.amortization.length; i++) {
+                interestRateMap.set(i, interestRate);
+                adjustedEmiMap.set(i, emi);
+            }
+            extraPaymentScheule.set(index, extraPayment);
+            console.log({ extraPaymentScheule, interestRateMap, adjustedEmiMap })
+            reload();
+            const modalObj = $('#exampleModal');
+            modalObj.modal('hide');
+        }
+    })
+    $('#exampleModal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget) // Button that triggered the modal
+        let index = button.attr('id').split('-')[1];
+        let rowData = { ...loanOutputDetails.amortization[index] };
+        console.log(rowData)
+        $(this).find('.modal-title').html(`<b> Loan Details </b>  <small> [Month : ${rowData.emiDate}]  </small>`);
+        setModel(rowData)
+        $('#saveModelChanges').data('index', rowData.id)
     })
 });
 
@@ -130,9 +150,9 @@ const calculateAmortization = () => {
         // calculate roi
         const roi = interestRate / 12 / 100;
         // calculate interest_amount
-        const interestAmount = beginingBalance * roi;
+        const interestAmount = (beginingBalance - extraPaymentForThisInstallment) * roi;
         // calculate principle_amount
-        const principleAmount = emi - interestAmount;
+        let principleAmount = emi - interestAmount;
         // check interest is morethan emi and adjust
         if (principleAmount < 0) {
             // adjust emi
@@ -146,24 +166,29 @@ const calculateAmortization = () => {
             extraPaymentForThisInstallment = (beginingBalance - principleAmount);
             endingBalance = 0;
         }
-        totalEarlyPayments += extraPaymentForThisInstallment;
         totalPayMent = extraPaymentForThisInstallment + emi;
         if (selectedYear == 'select year' || validateDate(emiDate, selectedYear)) {
             totalInterest += interestAmount;
             totalPrinciple += principleAmount;
+            totalEarlyPayments += extraPaymentForThisInstallment;
+
+            totalPayMentString = extraPaymentForThisInstallment > 0 ?
+                `${AMOUNT_FORMAT.format(Math.round(emi))} + ${AMOUNT_FORMAT.format(Math.round(extraPaymentForThisInstallment))}` :
+                AMOUNT_FORMAT.format(Math.round(emi));
 
             amortization.push({
-                id: i + 1,
-                month: i + 1,
+                id: i,
+                month: i+1,
                 emiDate: emiDate.toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "short",
                 }),
                 beginingBalance: AMOUNT_FORMAT.format(Math.round(beginingBalance)),
                 endingBalance: AMOUNT_FORMAT.format(Math.round(endingBalance)),
-                totalPayMent: AMOUNT_FORMAT.format(Math.round(totalPayMent)),
+                totalPayMent: totalPayMentString,
                 principleAmount: AMOUNT_FORMAT.format(Math.round(principleAmount)),
                 interestAmount: AMOUNT_FORMAT.format(Math.round(interestAmount)),
+                extraPayment: AMOUNT_FORMAT.format(Math.round(extraPaymentForThisInstallment)),
                 interestRate: INTERESTRATE_FORMAT.format(interestRate),
                 emi: AMOUNT_FORMAT.format(Math.round(emi))
             });
@@ -177,12 +202,8 @@ const calculateAmortization = () => {
         totalEarlyPayments: AMOUNT_FORMAT.format(Math.round(totalEarlyPayments)),
         totalPrinciple: AMOUNT_FORMAT.format(Math.round(totalPrinciple) + Math.round(endingBalance))
     }
-    renderChart(Math.round(totalPrinciple + endingBalance), totalInterest);
+    renderChart(Math.round(totalPrinciple + endingBalance + totalEarlyPayments), totalInterest);
 
     console.log(loanOutputDetails)
 
-}
-
-const operateEvents = (eve) => {
-    console.log(eve)
 }
