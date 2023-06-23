@@ -1,7 +1,7 @@
 const loanDetailsFormData = {
-    loanAmount: 5000000,
-    interestRate: 6.6,
-    loanPeriod: 25,
+    loanAmount: 0,
+    interestRate: 0,
+    loanPeriod: 0,
     emiStartDate: new Date()
 }
 
@@ -10,43 +10,72 @@ let loanOutputDetails = {
     totalInterest: 0,
     amortization: [],
     totalEarlyPayments: 0,
-    totalPrinciple: 0
+    totalPrinciple: 0,
+    tenureYears: []
 }
-
-const tenureYears = []
-
 const extraPaymentScheule = new Map();
 const interestRateMap = new Map();
 const adjustedEmiMap = new Map();
-
+let formFields = ['loanAmount', 'interestRate', 'loanPeriod', 'emiStartDate']
 
 $(document).ready(() => {
+    const reload = () => {
+        if (getFormData()) {
+            loanOutputDetails = emptyOutPut();
+            calculateAmortization();
+            table.bootstrapTable('load', loanOutputDetails.amortization);
+            loanOutputDetails.tenureYears
+                .filter((item, index) => loanOutputDetails.tenureYears.indexOf(item) === index)
+                .reduce((prev, current) => {
+                    const value = `${prev}-${current}`;
+                    mySelect.append(`<option value="${value}"> ${value} </option>`)
+                    return current;
+                })
+        }
+    }
     const table = $('#table');
-    calculateAmortization();
-    table.bootstrapTable({
-        columns: columns,
-        data: loanOutputDetails.amortization
-    });
     // Append the option to select
     const mySelect = $('#myselect');
-    mySelect.change(function () {
-        loanOutputDetails = {
-            emi: 0,
-            totalInterest: 0,
-            amortization: [],
-            totalEarlyPayments: 0,
-            totalPrinciple: 0
+    // month picker
+    $(".monthpicker")
+        .datepicker({
+            format: "MM-yyyy",
+            minViewMode: "months",
+            autoclose: true,
+        })
+        .on("change", function (e) {
+            console.log('date picker reloading..........')
+            reload();
+        });
+
+    mySelect.change(() => reload());
+    formFields = formFields.map(fieldId => {
+        const field = $(`#${fieldId}`);
+        if (fieldId != 'emiStartDate') {
+            field.on("change", (e) => {
+                console.log(`${fieldId} reloading..........`)
+                reload()
+            });
         }
-        calculateAmortization();
-        table.bootstrapTable('load', loanOutputDetails.amortization);
+        return { id: fieldId, field }
+    })
+    reload();
+    table.bootstrapTable({
+        columns: columns,
+        data: loanOutputDetails.amortization,
     });
 
-    [...new Set(tenureYears)].reduce((prev, current) => {
-        const optionValue = `${prev}-${current}`;
-        mySelect.append(`<option value="${optionValue}"> ${optionValue} </option>`)
-        return current;
+    $("input[type='checkbox']").change((e) => {
+        let index = e.target.dataset.index;
+        let rowData = loanOutputDetails.amortization[index];
+        e.target.checked = false;
+        console.log(rowData);
+        $('#exampleModal').modal({ show: true })
+
     })
 });
+
+
 
 const getValue = (i, interestRate, emi) => {
     const extraPaymentForThisInstallment =
@@ -63,16 +92,31 @@ const getValue = (i, interestRate, emi) => {
 
 }
 
+const getFormData = () => {
+    let flag = true;
+    // get form field values
+    formFields.map(item => {
+        const { id, field } = item;
+        let value = isNotNull(field.val()) ? field.val() : '0';
+        if (id != 'emiStartDate') {
+            if (value == 0) flag = false;
+            value = eval(value.replace(/,/g, ""))
+        };
+        loanDetailsFormData[id] = value;
+    });
+    return flag;
+}
+
 const calculateAmortization = () => {
     let { loanAmount, interestRate, loanPeriod, emiStartDate } = loanDetailsFormData;
-    let { emi, totalInterest, amortization, totalEarlyPayments, totalPrinciple } = loanOutputDetails;
+    let { emi, totalInterest, amortization, totalEarlyPayments, totalPrinciple, tenureYears } = loanOutputDetails;
     const selectedYear = $('#myselect').val();
-    let emiDate = new Date(emiStartDate)
+    let emiDate = emiStartDate != 0 ? new Date(emiStartDate) : new Date();
 
     emi = calculateEmi(interestRate, loanPeriod, loanAmount)
 
     let endingBalance = loanAmount;
-    for (let i = 0 ; endingBalance > emi; i++) {
+    for (let i = 0; endingBalance > emi; i++) {
 
         emiDate = new Date(emiDate.setMonth(emiDate.getMonth() + 1));
         tenureYears.push(emiDate.getFullYear());
@@ -109,6 +153,7 @@ const calculateAmortization = () => {
             totalPrinciple += principleAmount;
 
             amortization.push({
+                id: i + 1,
                 month: i + 1,
                 emiDate: emiDate.toLocaleDateString("en-US", {
                     year: "numeric",
@@ -138,3 +183,6 @@ const calculateAmortization = () => {
 
 }
 
+const operateEvents = (eve) => {
+    console.log(eve)
+}

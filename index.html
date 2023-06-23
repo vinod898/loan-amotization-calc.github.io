@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="./libs/css/bootstrap-icons.css" />
   <link rel="stylesheet" href="./libs/css/bootstrap-table.min.css" />
   <link rel="stylesheet" href="./src/css/style.css" />
+  <link rel="stylesheet" href="./libs/css/bootstrap-datepicker.min.css" />
+
 
 </head>
 
@@ -26,11 +28,11 @@
           <tbody>
             <tr>
               <td>
-                <label class="active" for="loan_amount">Loan Amount</label>
+                <label class="active" for="loanAmount">Loan Amount</label>
               </td>
               <td>
                 <div class="input-group">
-                  <input id="loan_amount" type="text" value="50,00,000" class="form-control form-control-sm numeric" />
+                  <input id="loanAmount" value = "5000000" type="text" class="form-control form-control-sm numeric" />
                   <div class="input-group-append">
                     <span class="input-group-text">₹</span>
                   </div>
@@ -39,11 +41,11 @@
             </tr>
             <tr>
               <td>
-                <label class="active" for="interest_rate">Annual Interest Rate</label>
+                <label class="active" for="interestRate">Annual Interest Rate</label>
               </td>
               <td>
                 <div class="input-group">
-                  <input id="interest_rate" type="text" value="6.6" class="form-control form-control-sm numeric" />
+                  <input id="interestRate" type="text" value = "6.6" class="form-control form-control-sm numeric" />
                   <div class="input-group-append">
                     <span class="input-group-text">%</span>
                   </div>
@@ -53,19 +55,19 @@
             </tr>
             <tr>
               <td>
-                <label class="active" for="loan_period">Loan period in years</label>
+                <label class="active" for="loanPeriod">Loan period in years</label>
               </td>
               <td>
-                <input id="loan_period" type="number" value="25" class="form-control form-control-sm numeric" />
+                <input id="loanPeriod" type="number" value = "25" class="form-control form-control-sm numeric" />
               </td>
             </tr>
             <tr>
               <td>
-                <label class="active" for="loan_start_date">EMI Starts from</label>
+                <label class="active" for="emiStartDate">EMI Starts from</label>
               </td>
               <td>
                 <div class="input-group date">
-                  <input id="loan_start_date" type="text" class="form-control form-control-sm monthpicker date"
+                  <input id="emiStartDate" type="text" class="form-control form-control-sm monthpicker date"
                     readonly />
                   <div class="input-group-addon">
                     <span class="glyphicon glyphicon-th"></span>
@@ -88,90 +90,15 @@
             </tr>
             <tr>
               <td>
-                <label class="active" for="number_of_payments">Scheduled number of payments</label>
+                <label class="active" for="number_of_payments">Select Financial Year</label>
               </td>
               <td>
-                <input id="number_of_payments" type="text" class="form-control form-control-sm numeric" readonly />
+                <select class="form-select" aria-label="Default select example" id='myselect'>
+                  <option value="select year" selected> Select year </option>
+                </select>
               </td>
             </tr>
-            <tr>
-              <td>
-                <label class="active" for="actual_number_of_payments">Actual number of payments</label>
-              </td>
-              <td>
-                <input id="actual_number_of_payments" type="text" class="form-control form-control-sm numeric"
-                  readonly />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label class="active" for="total_early_payments">Total of early payments</label>
-              </td>
-              <td>
-                <div class="input-group">
-                  <input id="total_early_payments" type="text" class="form-control form-control-sm numeric" readonly />
-                  <div class="input-group-append">
-                    <span class="input-group-text">₹</span>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label class="active" for="total_interest">Total interest</label>
-              </td>
-              <td>
-                <div class="input-group">
-                  <input id="total_interest" type="text" class="form-control form-control-sm numeric" readonly />
-                  <div class="input-group-append">
-                    <span class="input-group-text">₹</span>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label class="active" for="total_interest">Part Payments ? </label>
-              </td>
-              <td>
-                <div id="part_payment_selector" class="btn-group btn-group-toggle" data-toggle="buttons">
-                  <label class="btn btn-secondary active" for="off"><input type="radio" value="off" id="off" checked
-                      name="part_payments" onchange="calculateEmiAmount()" />No</label>
-                  <label class="btn btn-secondary"><input type="radio" value="scheduled_plan" id="scheduled_plan"
-                      name="part_payments" onchange="calculateEmiAmount()" />Scheduled Plan</label>
-                  <label class="btn btn-secondary"><input type="radio" value="custom_plan" id="custom_plan"
-                      name="part_payments" onchange="calculateEmiAmount()" />Custom Plan</label>
-                </div>
-              </td>
-            </tr>
-            <tr class="scheduled_payment_section" style="display: none;">
-              <td>
-                <label class="active" for="total_interest">Schedule Frequency</label>
-              </td>
-              <td>
-                <div id="frequency_selector" class="btn-group btn-group-toggle" data-toggle="buttons">
-                  <label class="btn btn-secondary"><input type="radio" value="monthly" id="monthly"
-                      name="schedule_frequecy" onchange="calculateAmortization()" />Monthly</label>
-                  <label class="btn btn-secondary active"><input type="radio" value="quarterly" id="quarterly" checked
-                      name="schedule_frequecy" onchange="calculateAmortization()" />Quarterly</label>
-                  <label class="btn btn-secondary"><input type="radio" value="yearly" id="yearly"
-                      name="schedule_frequecy" onchange="calculateAmortization()" />Yearly</label>
-                </div>
-              </td>
-            </tr>
-            <tr class="scheduled_payment_section" style="display: none;">
-              <td>
-                <label class="active" for="part_payment_installment">Part Payment Per Installment</label>
-              </td>
-              <td>
-                <div class="input-group">
-                  <input id="part_payment_installment" type="text" class="form-control form-control-sm numeric" />
-                  <div class="input-group-append">
-                    <span class="input-group-text">₹</span>
-                  </div>
-                </div>
-              </td>
-            </tr>
+
           </tbody>
         </table>
       </div>
@@ -181,28 +108,46 @@
         </div>
       </div>
     </div>
-    <div class="d-flex  flex-row-reverse text-white">
-      <div class="p-2">
-        <select class="form-select" aria-label="Default select example" id='myselect'>
-          <option value="select year" selected> Select year </option>
-        </select>
-      </div>
-    </div>
     <div class="d-flex">
       <div class="p-2">
-        <table id="table"></table>
+        <table id="table"   data-checkbox-header ='false'> </table>
       </div>
     </div>
   </div>
 
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+  Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 
-
-  <script src="./js/jquery-3.2.1.slim.min.js"></script>
-  <script src="./js/popper.min.js"></script>
-  <script src="./js/bootstrap.min.js"></script>
+  <script src="./libs/js/jquery-3.2.1.slim.min.js"></script>
+  <script src="./libs/js/popper.min.js"></script>
+  <script src="./libs/js/bootstrap.min.js"></script>
   <script src="./libs/js/bootstrap-table.min.js"></script>
+  <script src="./libs/js/bootstrap-datepicker.min.js"></script>
   <script src="./libs/js/apexcharts.min.js"></script>
   <script src="./src/js/constants.js"></script>
   <script src="./src/js/renderChart.js"></script>
