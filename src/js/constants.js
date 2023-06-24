@@ -85,7 +85,8 @@ const emptyOutPut = () => {
         amortization: [],
         totalEarlyPayments: 0,
         totalPrinciple: 0,
-        tenureYears: []
+        optionArray : ['<option value=\"select year\"> select year</option>']
+
     };
 }
 

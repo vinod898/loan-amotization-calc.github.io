@@ -4,19 +4,26 @@ const loanDetailsFormData = {
     loanPeriod: 0,
     emiStartDate: new Date()
 }
-
+const tempArr = [];
 let loanOutputDetails = {
     emi: 0,
     totalInterest: 0,
     amortization: [],
     totalEarlyPayments: 0,
     totalPrinciple: 0,
-    tenureYears: []
+    optionArray: ['select year']
 }
 const extraPaymentScheule = new Map();
 const interestRateMap = new Map();
 const adjustedEmiMap = new Map();
-let formFields = ['loanAmount', 'interestRate', 'loanPeriod', 'emiStartDate']
+let formFields = [
+    { name: 'loanAmount', required: true },
+    { name: 'interestRate', required: true },
+    { name: 'loanPeriod', required: true },
+    { name: 'emiStartDate', required: false },
+    { name: 'emiAmount', required: false }
+]
+
 
 $(document).ready(() => {
     const reload = () => {
@@ -24,13 +31,15 @@ $(document).ready(() => {
             loanOutputDetails = emptyOutPut();
             calculateAmortization();
             table.bootstrapTable('load', loanOutputDetails.amortization);
-            loanOutputDetails.tenureYears
-                .filter((item, index) => loanOutputDetails.tenureYears.indexOf(item) === index)
-                .reduce((prev, current) => {
-                    const value = `${prev}-${current}`;
-                    mySelect.append(`<option value="${value}"> ${value} </option>`)
-                    return current;
-                })
+            mySelect
+                .empty()
+                .append(loanOutputDetails.optionArray.join(' '));
+            //set final values
+            $('#emiAmount').val(loanOutputDetails.emi);
+            $('#actualMonths').val((loanDetailsFormData.loanPeriod ?? 0) * 12);
+            $('#reducedMonths').val(loanOutputDetails.amortization.length);
+
+
         }
     }
     const table = $('#table');
@@ -42,22 +51,20 @@ $(document).ready(() => {
             format: "MM-yyyy",
             minViewMode: "months",
             autoclose: true,
-        })
+        }).datepicker("setDate", 'now')
         .on("change", function (e) {
             console.log('date picker reloading..........')
             reload();
         });
 
-    mySelect.change(() => reload());
-    formFields = formFields.map(fieldId => {
-        const field = $(`#${fieldId}`);
-        if (fieldId != 'emiStartDate') {
-            field.on("change", (e) => {
-                console.log(`${fieldId} reloading..........`)
-                reload()
-            });
-        }
-        return { id: fieldId, field }
+    mySelect.change(() => {
+        reload()
+    });
+
+    formFields = formFields.map(({ name, required }) => {
+        const field = $(`#${name}`);
+        if (required) field.on('change', () => reload())
+        return { name, field, required }
     })
     reload();
     table.bootstrapTable({
@@ -67,7 +74,7 @@ $(document).ready(() => {
 
     $('#saveModelChanges').on('click', () => {
         const index = $('#saveModelChanges').data('index');
-        if (index && index > -1) {
+        if (index != undefined && index > -1) {
             let { extraPayment, interestRate, emi } = getModel();
             extraPayment = eval(extraPayment.replace(/,/g, ""))
             interestRate = eval(interestRate.replace(/,/g, ""))
@@ -115,21 +122,24 @@ const getValue = (i, interestRate, emi) => {
 const getFormData = () => {
     let flag = true;
     // get form field values
-    formFields.map(item => {
-        const { id, field } = item;
+    formFields.map(({ name, field, required }) => {
         let value = isNotNull(field.val()) ? field.val() : '0';
-        if (id != 'emiStartDate') {
-            if (value == 0) flag = false;
+        if (required && value == '0') flag = false;
+        if (name != 'emiStartDate') {
             value = eval(value.replace(/,/g, ""))
-        };
-        loanDetailsFormData[id] = value;
+        } else {
+            if (value == '0') {
+                console.log(field.val())
+            }
+        }
+        loanDetailsFormData[name] = value;
     });
     return flag;
 }
 
 const calculateAmortization = () => {
     let { loanAmount, interestRate, loanPeriod, emiStartDate } = loanDetailsFormData;
-    let { emi, totalInterest, amortization, totalEarlyPayments, totalPrinciple, tenureYears } = loanOutputDetails;
+    let { emi, totalInterest, amortization, totalEarlyPayments, totalPrinciple, optionArray } = loanOutputDetails;
     const selectedYear = $('#myselect').val();
     let emiDate = emiStartDate != 0 ? new Date(emiStartDate) : new Date();
 
@@ -139,7 +149,10 @@ const calculateAmortization = () => {
     for (let i = 0; endingBalance > emi; i++) {
 
         emiDate = new Date(emiDate.setMonth(emiDate.getMonth() + 1));
-        tenureYears.push(emiDate.getFullYear());
+        const currentYear = emiDate.getFullYear();
+        const value = emiDate.getMonth() < 3 ? `${currentYear - 1}-${currentYear}` : `${currentYear}-${currentYear + 1}`;
+        const option = `<option value="${value}" ${selectedYear == value ? 'selected' : ''}> ${value}</option>`;
+        if (!optionArray.includes(option)) optionArray.push(option);
         let { extraPaymentForThisInstallment, interestRateforThisMonth, emiThisMonth } = getValue(i, interestRate, emi);
 
         //assing new values of emi, interestRate
@@ -178,7 +191,7 @@ const calculateAmortization = () => {
 
             amortization.push({
                 id: i,
-                month: i+1,
+                month: i + 1,
                 emiDate: emiDate.toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "short",
@@ -202,7 +215,7 @@ const calculateAmortization = () => {
         totalEarlyPayments: AMOUNT_FORMAT.format(Math.round(totalEarlyPayments)),
         totalPrinciple: AMOUNT_FORMAT.format(Math.round(totalPrinciple) + Math.round(endingBalance))
     }
-    renderChart(Math.round(totalPrinciple + endingBalance + totalEarlyPayments), totalInterest);
+    renderChart(Math.round(totalPrinciple + (selectedYear == 'select year' ? endingBalance: 0) + totalEarlyPayments), totalInterest);
 
     console.log(loanOutputDetails)
 
