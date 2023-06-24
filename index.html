@@ -76,14 +76,34 @@
             </tr>
             <tr>
               <td>
-                <label class="active" for="emi_amount">Scheduled monthly payment</label>
+                <label class="active" for="emiAmount">Scheduled monthly payment</label>
               </td>
               <td>
                 <div class="input-group">
-                  <input id="emi_amount" type="text" class="form-control form-control-sm numeric" readonly />
+                  <input id="emiAmount" type="text" class="form-control form-control-sm numeric" readonly />
                   <div class="input-group-append">
                     <span class="input-group-text">₹</span>
                   </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="active" for="actualMonths">Actual No. of Months</label>
+              </td>
+              <td>
+                <div class="input-group">
+                  <input id="actualMonths" type="text" class="form-control form-control-sm numeric" readonly />
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label class="active" for="reducedMonths"> Modified no.of Months </label>
+              </td>
+              <td>
+                <div class="input-group">
+                  <input id="reducedMonths" type="text" class="form-control form-control-sm numeric" readonly />
                 </div>
               </td>
             </tr>
@@ -97,7 +117,6 @@
                 </select>
               </td>
             </tr>
-
           </tbody>
         </table>
       </div>
@@ -231,7 +250,7 @@
 
         </div>
         <div class="modal-footer">
-          <button  type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           <button id="saveModelChanges" type="button" class="btn btn-primary">Save changes</button>
         </div>
       </div>
