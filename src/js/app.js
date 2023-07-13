@@ -146,7 +146,8 @@ const calculateAmortization = () => {
     emi = calculateEmi(interestRate, loanPeriod, loanAmount)
 
     let endingBalance = loanAmount;
-    for (let i = 0; endingBalance > emi; i++) {
+    // for (let i = 0; endingBalance > emi; i++) {
+    for (let i = 0; endingBalance > 0; i++) {
 
         emiDate = new Date(emiDate.setMonth(emiDate.getMonth() + 1));
         const currentYear = emiDate.getFullYear();
@@ -164,6 +165,9 @@ const calculateAmortization = () => {
         const roi = interestRate / 12 / 100;
         // calculate interest_amount
         const interestAmount = (beginingBalance - extraPaymentForThisInstallment) * roi;
+        if(endingBalance+interestAmount < emi){
+            emi = endingBalance+interestAmount;
+        }
         // calculate principle_amount
         let principleAmount = emi - interestAmount;
         // check interest is morethan emi and adjust
